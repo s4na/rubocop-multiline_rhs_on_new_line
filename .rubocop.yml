@@ -1,6 +1,8 @@
 AllCops:
   NewCops: enable
+  # Minimum supported Ruby version (development uses 4.0.1)
   TargetRubyVersion: 2.7
+  SuggestExtensions: false
   Exclude:
     - "tmp/**/*"
 
@@ -9,3 +11,13 @@ Style/StringLiterals:
 
 Style/FrozenStringLiteralComment:
   Enabled: false
+
+# rubocop-multiline_rhs_on_new_line.rb uses a dash by convention for RuboCop extensions
+Naming/FileName:
+  Exclude:
+    - "lib/rubocop-*.rb"
+
+# RSpec describe blocks naturally grow large; Metrics cops don't apply to specs
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"

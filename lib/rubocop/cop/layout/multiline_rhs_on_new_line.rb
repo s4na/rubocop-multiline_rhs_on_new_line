@@ -4,6 +4,9 @@ module RuboCop
       # Enforces that the right-hand side of an assignment starts on a new line
       # when it spans multiple lines.
       #
+      # Note: `casgn` (constant assignment) and `masgn` (multiple assignment)
+      # are intentionally out of scope for this cop.
+      #
       # @example
       #   # bad
       #   hoge = if aaa
@@ -33,10 +36,9 @@ module RuboCop
       class MultilineRhsOnNewLine < Base
         extend AutoCorrector
 
-        MSG = "Put the right-hand side of a multiline assignment on a new line after `=`."
+        MSG = "Put the right-hand side of a multiline assignment on a new line after `=`.".freeze
 
-        ASSIGNMENT_NODE_TYPES = %i[lvasgn ivasgn cvasgn gvasgn].freeze
-
+        # All assignment node types share the same check logic.
         def on_lvasgn(node)
           check(node)
         end
@@ -59,13 +61,10 @@ module RuboCop
           rhs = node.children.last
           return if rhs.nil?
 
-          rhs_begin_line = rhs.loc.expression.line
-          rhs_end_line = rhs.loc.expression.last_line
+          rhs_loc = rhs.loc.expression
+          return unless rhs_loc.line < rhs_loc.last_line
 
-          return unless rhs_begin_line < rhs_end_line
-
-          asgn_line = node.loc.operator.line
-          return unless rhs_begin_line == asgn_line
+          return unless rhs_loc.line == node.loc.operator.line
 
           add_offense(node.loc.operator) do |corrector|
             autocorrect(corrector, node)
@@ -73,17 +72,31 @@ module RuboCop
         end
 
         def autocorrect(corrector, node)
-          operator = node.loc.operator
-          rhs = node.children.last
+          rhs_loc = node.children.last.loc.expression
+          target_col = node.loc.expression.column + 2
 
-          # Range from just after `=` to the start of the rhs expression
-          range_after_op = operator.end.join(rhs.loc.expression.begin)
+          insert_newline(corrector, node.loc.operator, rhs_loc, target_col)
+          reindent_body(corrector, rhs_loc, target_col)
+        end
 
-          # Determine indentation: column of the assignment node
-          asgn_col = node.loc.expression.column
-          new_indent = " " * (asgn_col + 2)
+        def insert_newline(corrector, operator, rhs_loc, target_col)
+          range_after_op = operator.end.join(rhs_loc.begin)
+          corrector.replace(range_after_op, "\n#{' ' * target_col}")
+        end
 
-          corrector.replace(range_after_op, "\n#{new_indent}")
+        def reindent_body(corrector, rhs_loc, target_col)
+          col_delta = target_col - rhs_loc.column
+          buffer = rhs_loc.source_buffer
+          ((rhs_loc.line + 1)..rhs_loc.last_line).each do |lineno|
+            reindent_line(corrector, buffer, lineno, col_delta)
+          end
+        end
+
+        def reindent_line(corrector, buffer, lineno, col_delta)
+          line_source = buffer.source_line(lineno)
+          leading = line_source[/\A */].length
+          new_leading = [leading + col_delta, 0].max
+          corrector.replace(buffer.line_range(lineno).resize(leading), " " * new_leading)
         end
       end
     end

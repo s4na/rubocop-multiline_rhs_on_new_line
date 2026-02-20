@@ -12,13 +12,14 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
              end
     RUBY
 
+    # `if` was at column 7, target is column 2 (col_delta = -5)
     expect_correction(<<~RUBY)
       hoge =
         if aaa
-               bbb
-             else
-               ccc
-             end
+          bbb
+        else
+          ccc
+        end
     RUBY
   end
 
@@ -32,12 +33,13 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
                end
     RUBY
 
+    # `case` was at column 9, target is column 2 (col_delta = -7)
     expect_correction(<<~RUBY)
       result =
         case foo
-               when :a then 1
-               when :b then 2
-               end
+        when :a then 1
+        when :b then 2
+        end
     RUBY
   end
 
@@ -51,12 +53,13 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
             end
     RUBY
 
+    # `begin` was at column 6, target is column 2 (col_delta = -4)
     expect_correction(<<~RUBY)
       val =
         begin
-              something
-              something_else
-            end
+          something
+          something_else
+        end
     RUBY
   end
 
