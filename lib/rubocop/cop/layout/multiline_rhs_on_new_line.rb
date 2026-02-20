@@ -12,11 +12,10 @@ module RuboCop
       # Note: `casgn` (constant assignment) and `masgn` (multiple assignment)
       # are intentionally out of scope for this cop.
       #
-      # @note Autocorrect limitation: indentation is adjusted by character count.
-      #   Mixed tab/space indentation may produce incorrect results because a tab
-      #   is counted as a single character. This cop is designed for codebases
-      #   that use consistent space-based indentation (`Layout/IndentationStyle:
-      #   EnforcedStyle: spaces`).
+      # Autocorrect computes indentation in visual columns, expanding tabs to
+      # spaces using `Layout/IndentationWidth` as the tab stop size (default: 2).
+      # Any leading tabs in affected lines are replaced with spaces after
+      # correction.
       #
       # @example
       #   # bad
@@ -93,10 +92,18 @@ module RuboCop
 
         def autocorrect(corrector, node)
           rhs_loc = node.children.last.loc.expression
-          target_col = node.loc.expression.column + indent_width
-
+          target_col = target_column(node)
+          col_delta = target_col - visual_col_of_loc(rhs_loc)
           insert_newline(corrector, node.loc.operator, rhs_loc, target_col)
-          reindent_body(corrector, rhs_loc, target_col)
+          reindent_body(corrector, rhs_loc, col_delta)
+        end
+
+        def target_column(node)
+          visual_col_of_loc(node.loc.expression) + indent_width
+        end
+
+        def visual_col_of_loc(loc)
+          visual_column_at(loc.source_buffer.source_line(loc.line), loc.column)
         end
 
         def insert_newline(corrector, operator, rhs_loc, target_col)
@@ -104,22 +111,46 @@ module RuboCop
           corrector.replace(range_after_op, "\n#{' ' * target_col}")
         end
 
-        def reindent_body(corrector, rhs_loc, target_col)
-          col_delta = target_col - rhs_loc.column
+        def reindent_body(corrector, rhs_loc, col_delta)
           buffer = rhs_loc.source_buffer
           ((rhs_loc.line + 1)..rhs_loc.last_line).each do |lineno|
             reindent_line(corrector, buffer, lineno, col_delta)
           end
         end
 
-        # NOTE: Leading whitespace is measured in characters (not visual columns).
-        # A tab counts as one character, so mixed tab/space indentation will
-        # produce incorrect results. Works correctly for space-only indentation.
+        # Replaces the leading whitespace on lineno with spaces, shifting the
+        # visual indentation by col_delta. Tabs are expanded using indent_width
+        # as the tab stop size before computing the new width.
         def reindent_line(corrector, buffer, lineno, col_delta)
           line_source = buffer.source_line(lineno)
-          leading = line_source[/\A[ \t]*/].length
-          new_leading = [leading + col_delta, 0].max
-          corrector.replace(buffer.line_range(lineno).resize(leading), " " * new_leading)
+          old_visual = visual_width_of_leading(line_source)
+          new_visual = [old_visual + col_delta, 0].max
+          char_leading = line_source[/\A[ \t]*/].length
+          corrector.replace(buffer.line_range(lineno).resize(char_leading), " " * new_visual)
+        end
+
+        # Returns the visual column of char_pos in line, expanding tabs using
+        # indent_width as the tab stop size.
+        def visual_column_at(line, char_pos)
+          tw = indent_width
+          col = 0
+          line[0, char_pos].each_char do |c|
+            col = c == "\t" ? ((col / tw) + 1) * tw : col + 1
+          end
+          col
+        end
+
+        # Returns the visual width of the leading whitespace in line, expanding
+        # tabs using indent_width as the tab stop size.
+        def visual_width_of_leading(line)
+          tw = indent_width
+          col = 0
+          line.each_char do |c|
+            break unless [" ", "\t"].include?(c)
+
+            col = c == "\t" ? ((col / tw) + 1) * tw : col + 1
+          end
+          col
         end
 
         def indent_width

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add nil guard for `rhs.loc.expression` in `offense?` to prevent `NoMethodError`
   on incomplete AST nodes
+- Autocorrect now computes indentation in visual columns, expanding tabs using
+  `Layout/IndentationWidth` as the tab stop size. Leading tabs in corrected
+  lines are replaced with spaces, producing correct alignment regardless of
+  mixed tab/space indentation.
 
 ### Added
 
@@ -20,9 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Document tab/space indentation limitation in `reindent_line` and class-level
-  docstring
-- Document the reason for `SafeAutoCorrect: false` in `config/default.yml`
+- Set `SafeAutoCorrect: true` now that autocorrect handles tab indentation
+  correctly
+- Update `config/default.yml` comment to explain tab-to-space conversion
+  behaviour
 - Add `unless` and `kwbegin` examples to README
 
 ## [0.1.0] - 2026-02-20

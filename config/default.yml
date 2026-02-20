@@ -1,9 +1,8 @@
 Layout/MultilineRhsOnNewLine:
   Description: 'Put the right-hand side of a multiline assignment on a new line.'
   Enabled: true
-  # SafeAutoCorrect is false because the autocorrect rewrites indentation based
-  # on character count. Codebases that mix tabs and spaces may receive incorrect
-  # indentation after correction. Set to true if your project enforces
-  # space-only indentation (e.g. `Layout/IndentationStyle: EnforcedStyle: spaces`).
-  SafeAutoCorrect: false
+  # Autocorrect expands tabs to spaces using Layout/IndentationWidth as the tab
+  # stop size before reindenting, so the result is always space-based. This is
+  # safe for any indentation style.
+  SafeAutoCorrect: true
   VersionAdded: '0.1.0'
