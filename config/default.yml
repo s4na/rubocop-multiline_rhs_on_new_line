@@ -1,0 +1,5 @@
+Layout/MultilineRhsOnNewLine:
+  Description: 'Put the right-hand side of a multiline assignment on a new line.'
+  Enabled: true
+  SafeAutoCorrect: false
+  VersionAdded: '0.1.0'
