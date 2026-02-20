@@ -5,6 +5,7 @@ AllCops:
   SuggestExtensions: false
   Exclude:
     - "tmp/**/*"
+    - "vendor/**/*"
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
