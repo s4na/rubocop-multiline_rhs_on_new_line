@@ -1,0 +1,1 @@
+# rubocop-multiline_rhs_on_new_line
