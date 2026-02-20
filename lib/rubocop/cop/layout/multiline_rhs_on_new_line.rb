@@ -12,6 +12,12 @@ module RuboCop
       # Note: `casgn` (constant assignment) and `masgn` (multiple assignment)
       # are intentionally out of scope for this cop.
       #
+      # @note Autocorrect limitation: indentation is adjusted by character count.
+      #   Mixed tab/space indentation may produce incorrect results because a tab
+      #   is counted as a single character. This cop is designed for codebases
+      #   that use consistent space-based indentation (`Layout/IndentationStyle:
+      #   EnforcedStyle: spaces`).
+      #
       # @example
       #   # bad
       #   hoge = if aaa
@@ -80,6 +86,8 @@ module RuboCop
           return false unless MULTILINE_BLOCK_TYPES.include?(rhs.type)
 
           rhs_loc = rhs.loc.expression
+          return false unless rhs_loc
+
           rhs_loc.line < rhs_loc.last_line && rhs_loc.line == node.loc.operator.line
         end
 
@@ -104,6 +112,9 @@ module RuboCop
           end
         end
 
+        # NOTE: Leading whitespace is measured in characters (not visual columns).
+        # A tab counts as one character, so mixed tab/space indentation will
+        # produce incorrect results. Works correctly for space-only indentation.
         def reindent_line(corrector, buffer, lineno, col_delta)
           line_source = buffer.source_line(lineno)
           leading = line_source[/\A[ \t]*/].length
