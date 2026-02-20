@@ -32,6 +32,10 @@ require:
 When the right-hand side of an assignment spans multiple lines, it must begin
 on a new line after `=`.
 
+Applies to block-like expressions: `if`, `unless`, `case`, `begin`, and
+`kwbegin` (begin with rescue/ensure). Array, hash, and string literals are
+intentionally excluded as they are idiomatic Ruby.
+
 ### Bad
 
 ```ruby
@@ -46,10 +50,17 @@ result = case foo
          when :b then 2
          end
 
-val = begin
-        something
-        something_else
+val = unless condition
+        true_val
+      else
+        false_val
       end
+
+x = begin
+      something
+    rescue StandardError
+      other
+    end
 ```
 
 ### Good
@@ -68,10 +79,30 @@ result =
   when :b then 2
   end
 
+val =
+  unless condition
+    true_val
+  else
+    false_val
+  end
+
+x =
+  begin
+    something
+  rescue StandardError
+    other
+  end
+
 # Single-line RHS is always fine
 hoge = aaa
 hoge = foo ? bar : baz
 ```
+
+### Notes
+
+- **Autocorrect** (`SafeAutoCorrect: false`): The autocorrect adjusts indentation
+  by character count. Mixed tab/space indentation may produce unexpected results.
+  The correction is safe for projects using space-only indentation.
 
 ## License
 

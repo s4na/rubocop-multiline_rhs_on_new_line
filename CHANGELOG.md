@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Add nil guard for `rhs.loc.expression` in `offense?` to prevent `NoMethodError`
+  on incomplete AST nodes
+
+### Added
+
+- Test: add `unless` and `kwbegin` (begin/rescue) offense and autocorrect cases
+- Test: add nested context (assignment inside method body) autocorrect case
+- Test: translate all spec comments from Japanese to English
+
+### Changed
+
+- Document tab/space indentation limitation in `reindent_line` and class-level
+  docstring
+- Document the reason for `SafeAutoCorrect: false` in `config/default.yml`
+- Add `unless` and `kwbegin` examples to README
+
 ## [0.1.0] - 2026-02-20
 
 ### Added
