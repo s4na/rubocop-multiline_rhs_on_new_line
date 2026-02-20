@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
-  # 1. if/else/end が複数行で = と同じ行 → offense
+  # 1. multiline if/else on the same line as `=` -> offense
   it "registers an offense when multiline if/else is on the same line as =" do
     expect_offense(<<~RUBY)
       hoge = if aaa
@@ -23,7 +23,29 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 2. case/when/end が複数行で = と同じ行 → offense
+  # 2. multiline unless on the same line as `=` -> offense
+  it "registers an offense when multiline unless is on the same line as =" do
+    expect_offense(<<~RUBY)
+      foo = unless condition
+          ^ Put the right-hand side of a multiline assignment on a new line after `=`.
+              true_val
+            else
+              false_val
+            end
+    RUBY
+
+    # `unless` was at column 6, target is column 2 (col_delta = -4)
+    expect_correction(<<~RUBY)
+      foo =
+        unless condition
+          true_val
+        else
+          false_val
+        end
+    RUBY
+  end
+
+  # 3. multiline case/when on the same line as `=` -> offense
   it "registers an offense when multiline case is on the same line as =" do
     expect_offense(<<~RUBY)
       result = case foo
@@ -43,7 +65,7 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 3. begin/end が複数行で = と同じ行 → offense
+  # 4. multiline begin/end on the same line as `=` -> offense
   it "registers an offense when multiline begin/end is on the same line as =" do
     expect_offense(<<~RUBY)
       val = begin
@@ -63,7 +85,29 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 4. ivasgn（@foo =）で複数行 → offense + correction
+  # 5. multiline begin/rescue (kwbegin) on the same line as `=` -> offense
+  it "registers an offense when multiline begin/rescue (kwbegin) is on the same line as =" do
+    expect_offense(<<~RUBY)
+      x = begin
+        ^ Put the right-hand side of a multiline assignment on a new line after `=`.
+            something
+          rescue StandardError
+            other
+          end
+    RUBY
+
+    # `begin` was at column 4, target is column 2 (col_delta = -2)
+    expect_correction(<<~RUBY)
+      x =
+        begin
+          something
+        rescue StandardError
+          other
+        end
+    RUBY
+  end
+
+  # 6. ivasgn (@foo =) with multiline RHS -> offense + correction
   it "registers an offense for ivasgn with multiline RHS" do
     expect_offense(<<~RUBY)
       @foo = if condition
@@ -85,21 +129,21 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 5. 三項演算子（1行）→ no offense
+  # 7. single-line ternary -> no offense
   it "does not register an offense for a single-line ternary" do
     expect_no_offenses(<<~RUBY)
       hoge = foo ? bar : baz
     RUBY
   end
 
-  # 6. 通常の1行代入 → no offense
+  # 8. simple single-line assignment -> no offense
   it "does not register an offense for a simple single-line assignment" do
     expect_no_offenses(<<~RUBY)
       hoge = aaa
     RUBY
   end
 
-  # 7. = の後で改行済み → no offense
+  # 9. RHS already on the next line after `=` -> no offense
   it "does not register an offense when RHS starts on the next line" do
     expect_no_offenses(<<~RUBY)
       hoge =
@@ -111,7 +155,7 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 8. 複数行配列リテラル → no offense
+  # 10. multiline array literal -> no offense
   it "does not register an offense for a multiline array literal" do
     expect_no_offenses(<<~RUBY)
       foo = [
@@ -120,7 +164,7 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 9. 複数行ハッシュリテラル → no offense
+  # 11. multiline hash literal -> no offense
   it "does not register an offense for a multiline hash literal" do
     expect_no_offenses(<<~RUBY)
       config = {
@@ -129,7 +173,7 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 10. 複数行文字列リテラル → no offense
+  # 12. multiline string literal -> no offense
   it "does not register an offense for a multiline string literal" do
     expect_no_offenses(<<~RUBY)
       message = "hello
@@ -178,6 +222,32 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
         else
           false_val
         end
+    RUBY
+  end
+
+  # Extra: nested context (already-indented assignment inside a method)
+  it "registers an offense and corrects inside a method body" do
+    expect_offense(<<~RUBY)
+      def some_method
+        result = if condition
+               ^ Put the right-hand side of a multiline assignment on a new line after `=`.
+                   true_val
+                 else
+                   false_val
+                 end
+      end
+    RUBY
+
+    # `result` at column 2, target_col = 4; `if` at column 11 (col_delta = -7)
+    expect_correction(<<~RUBY)
+      def some_method
+        result =
+          if condition
+            true_val
+          else
+            false_val
+          end
+      end
     RUBY
   end
 end
