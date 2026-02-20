@@ -1,0 +1,11 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.7
+  Exclude:
+    - "tmp/**/*"
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
