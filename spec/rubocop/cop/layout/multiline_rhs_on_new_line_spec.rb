@@ -63,7 +63,7 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
-  # 4. ivasgn（@foo =）で複数行 → offense
+  # 4. ivasgn（@foo =）で複数行 → offense + correction
   it "registers an offense for ivasgn with multiline RHS" do
     expect_offense(<<~RUBY)
       @foo = if condition
@@ -72,6 +72,16 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
              else
                false_val
              end
+    RUBY
+
+    # `if` was at column 7, target is column 2 (col_delta = -5)
+    expect_correction(<<~RUBY)
+      @foo =
+        if condition
+          true_val
+        else
+          false_val
+        end
     RUBY
   end
 
@@ -101,6 +111,32 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
+  # 8. 複数行配列リテラル → no offense
+  it "does not register an offense for a multiline array literal" do
+    expect_no_offenses(<<~RUBY)
+      foo = [
+        1, 2, 3
+      ]
+    RUBY
+  end
+
+  # 9. 複数行ハッシュリテラル → no offense
+  it "does not register an offense for a multiline hash literal" do
+    expect_no_offenses(<<~RUBY)
+      config = {
+        key: "value"
+      }
+    RUBY
+  end
+
+  # 10. 複数行文字列リテラル → no offense
+  it "does not register an offense for a multiline string literal" do
+    expect_no_offenses(<<~RUBY)
+      message = "hello
+      world"
+    RUBY
+  end
+
   # Extra: cvasgn
   it "registers an offense for cvasgn with multiline RHS" do
     expect_offense(<<~RUBY)
@@ -110,6 +146,16 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
               else
                 false_val
               end
+    RUBY
+
+    # `if` was at column 8, target is column 2 (col_delta = -6)
+    expect_correction(<<~RUBY)
+      @@foo =
+        if condition
+          true_val
+        else
+          false_val
+        end
     RUBY
   end
 
@@ -122,6 +168,16 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
              else
                false_val
              end
+    RUBY
+
+    # `if` was at column 7, target is column 2 (col_delta = -5)
+    expect_correction(<<~RUBY)
+      $foo =
+        if condition
+          true_val
+        else
+          false_val
+        end
     RUBY
   end
 end
