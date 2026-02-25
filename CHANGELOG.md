@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test: add `unless` and `kwbegin` (begin/rescue) offense and autocorrect cases
 - Test: add nested context (assignment inside method body) autocorrect case
 - Test: translate all spec comments from Japanese to English
+- Test: add tab-indented source case to verify visual column autocorrect
+
+### Docs
+
+- Fix README Notes section: update `SafeAutoCorrect` description from `false`
+  (character-count) to `true` (visual-column) to match current behavior
 
 ### Changed
 

@@ -100,9 +100,11 @@ hoge = foo ? bar : baz
 
 ### Notes
 
-- **Autocorrect** (`SafeAutoCorrect: false`): The autocorrect adjusts indentation
-  by character count. Mixed tab/space indentation may produce unexpected results.
-  The correction is safe for projects using space-only indentation.
+- **Autocorrect** (`SafeAutoCorrect: true`): Indentation is computed in visual
+  columns, expanding tabs using `Layout/IndentationWidth` as the tab stop size
+  (default: 2). Leading tabs in autocorrected lines are replaced with spaces.
+  Projects using tab indentation may see tab characters converted to spaces in
+  the corrected output.
 
 ## License
 
