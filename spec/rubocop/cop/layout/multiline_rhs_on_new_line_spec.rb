@@ -225,6 +225,30 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
+  # Tab-indented source: visual column calculation handles tabs (not char count)
+  it "registers an offense and corrects with tab-indented source" do
+    tab = "\t"
+    expect_offense(<<~RUBY)
+      #{tab}hoge = if aaa
+            ^ Put the right-hand side of a multiline assignment on a new line after `=`.
+      #{tab}#{tab}       bbb
+      #{tab}#{tab}     else
+      #{tab}#{tab}       ccc
+      #{tab}#{tab}     end
+    RUBY
+
+    # `hoge` at visual col 2 (1 tab, indent_width=2), target_col = 4
+    # `if` at visual col 9 (not char col 8), col_delta = -5
+    expect_correction(<<~RUBY)
+      #{tab}hoge =
+          if aaa
+            bbb
+          else
+            ccc
+          end
+    RUBY
+  end
+
   # Extra: nested context (already-indented assignment inside a method)
   it "registers an offense and corrects inside a method body" do
     expect_offense(<<~RUBY)
