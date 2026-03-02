@@ -10,7 +10,9 @@ module RuboCop
       # benefit from being moved to a new line.
       #
       # Note: `casgn` (constant assignment) and `masgn` (multiple assignment)
-      # are intentionally out of scope for this cop.
+      # are intentionally out of scope for this cop. Constant assignments
+      # typically appear at the class/module top level where inline style is
+      # conventional, and multiple assignments have a different AST structure.
       #
       # Autocorrect computes indentation in visual columns, expanding tabs to
       # spaces using `Layout/IndentationWidth` as the tab stop size (default: 2).
@@ -60,6 +62,7 @@ module RuboCop
         # Node types that represent block-like structures where requiring a
         # newline before the RHS improves readability.
         MULTILINE_BLOCK_TYPES = %i[if unless case begin kwbegin].freeze
+        WHITESPACE_CHARS = [" ", "\t"].freeze
 
         def on_lvasgn(node)
           check(node)
@@ -81,7 +84,7 @@ module RuboCop
 
         def offense?(node)
           rhs = node.children.last
-          return false if rhs.nil?
+          return false unless rhs.is_a?(::RuboCop::AST::Node)
           return false unless MULTILINE_BLOCK_TYPES.include?(rhs.type)
 
           rhs_loc = rhs.loc.expression
@@ -146,7 +149,7 @@ module RuboCop
           tw = indent_width
           col = 0
           line.each_char do |c|
-            break unless [" ", "\t"].include?(c)
+            break unless WHITESPACE_CHARS.include?(c)
 
             col = c == "\t" ? ((col / tw) + 1) * tw : col + 1
           end

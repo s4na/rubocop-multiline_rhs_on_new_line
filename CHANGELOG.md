@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix `NoMethodError` crash when `or_asgn` (`||=`), `and_asgn` (`&&=`),
+  `op_asgn` (`+=` etc.), or `for` loop variables produce `lvasgn` nodes
+  whose `children.last` is a Symbol instead of an AST node
 - Add nil guard for `rhs.loc.expression` in `offense?` to prevent `NoMethodError`
   on incomplete AST nodes
 - Autocorrect now computes indentation in visual columns, expanding tabs using
@@ -16,8 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lines are replaced with spaces, producing correct alignment regardless of
   mixed tab/space indentation.
 
+### Changed
+
+- Avoid per-iteration array allocation in `visual_width_of_leading`
+- Add rationale for `casgn`/`masgn` exclusion to cop documentation
+
 ### Added
 
+- Test: add `or_asgn`, `and_asgn`, `op_asgn`, and `for` loop crash-prevention
+  cases
 - Test: add `unless` and `kwbegin` (begin/rescue) offense and autocorrect cases
 - Test: add nested context (assignment inside method body) autocorrect case
 - Test: translate all spec comments from Japanese to English
