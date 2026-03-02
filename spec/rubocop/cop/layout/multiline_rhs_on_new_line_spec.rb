@@ -225,6 +225,48 @@ RSpec.describe RuboCop::Cop::Layout::MultilineRhsOnNewLine, :config do
     RUBY
   end
 
+  # or_asgn (||=) produces lvasgn with a Symbol child -> should not crash
+  it "does not crash on or_asgn (||=) with multiline RHS" do
+    expect_no_offenses(<<~RUBY)
+      foo ||= if bar
+                baz
+              else
+                qux
+              end
+    RUBY
+  end
+
+  # and_asgn (&&=) produces lvasgn with a Symbol child -> should not crash
+  it "does not crash on and_asgn (&&=) with multiline RHS" do
+    expect_no_offenses(<<~RUBY)
+      foo &&= if bar
+                baz
+              else
+                qux
+              end
+    RUBY
+  end
+
+  # op_asgn (+=) produces lvasgn with a Symbol child -> should not crash
+  it "does not crash on op_asgn (+=) with multiline RHS" do
+    expect_no_offenses(<<~RUBY)
+      foo += if bar
+               baz
+             else
+               qux
+             end
+    RUBY
+  end
+
+  # for loop produces lvasgn with a Symbol child -> should not crash
+  it "does not crash on for loop variable" do
+    expect_no_offenses(<<~RUBY)
+      for x in [1, 2, 3]
+        puts x
+      end
+    RUBY
+  end
+
   # Tab-indented source: visual column calculation handles tabs (not char count)
   it "registers an offense and corrects with tab-indented source" do
     tab = "\t"
