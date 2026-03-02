@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Avoid per-iteration array allocation in `visual_width_of_leading`
 - Add rationale for `casgn`/`masgn` exclusion to cop documentation
+- Set `SafeAutoCorrect: true` now that autocorrect handles tab indentation
+  correctly
+- Update `config/default.yml` comment to explain tab-to-space conversion
+  behaviour
+- Add `unless` and `kwbegin` examples to README
+- Fix README Notes section: update `SafeAutoCorrect` description from `false`
+  (character-count) to `true` (visual-column) to match current behavior
 
 ### Added
 
@@ -32,16 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test: add nested context (assignment inside method body) autocorrect case
 - Test: translate all spec comments from Japanese to English
 - Test: add tab-indented source case to verify visual column autocorrect
-
-### Changed
-
-- Set `SafeAutoCorrect: true` now that autocorrect handles tab indentation
-  correctly
-- Update `config/default.yml` comment to explain tab-to-space conversion
-  behaviour
-- Add `unless` and `kwbegin` examples to README
-- Fix README Notes section: update `SafeAutoCorrect` description from `false`
-  (character-count) to `true` (visual-column) to match current behavior
 
 ## [0.1.0] - 2026-02-20
 
